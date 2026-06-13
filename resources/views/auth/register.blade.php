@@ -1,0 +1,3 @@
+@extends('layouts.app')
+@section('title', 'Create Account | KISANWORLD')
+@section('content')<x-page-hero eyebrow="Join KISANWORLD" title="Create your account" /><section class="inner-section section-shell auth-wrap"><form action="{{ route('register.store') }}" method="POST" class="site-form">@csrf<label>Name<input name="name" value="{{ old('name') }}" required></label><label>Email<input type="email" name="email" value="{{ old('email') }}" required></label><label>Phone<input name="phone" value="{{ old('phone') }}"></label><label>Password<input type="password" name="password" required></label><label>Confirm password<input type="password" name="password_confirmation" required></label><button class="button button-primary">Create account</button></form></section>@endsection

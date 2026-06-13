@@ -1,0 +1,2 @@
+@props(['video'])
+<article class="media-card"><a href="{{ route('videos.show',$video) }}" class="media-cover"><img src="{{ $video->thumbnail ? asset(ltrim($video->thumbnail,'/')) : 'https://i.ytimg.com/vi/'.$video->youtube_video_id.'/hqdefault.jpg' }}" alt="{{ $video->thumbnail_alt ?: $video->title }}" loading="lazy"><span class="play-icon">▶</span></a><div><small>{{ $video->category ?: 'Agriculture' }}</small><h2><a href="{{ route('videos.show',$video) }}">{{ $video->title }}</a></h2></div></article>
