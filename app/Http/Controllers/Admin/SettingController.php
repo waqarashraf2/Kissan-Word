@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\SeoSetting;
 use App\Models\WebsiteSetting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class SettingController extends Controller
@@ -38,6 +39,8 @@ class SettingController extends Controller
                 SeoSetting::updateOrCreate(['page_key' => $pageKey], $seo);
             }
         });
+
+        Cache::forget('public_website_settings');
 
         return back()->with('success', __('Settings updated.'));
     }

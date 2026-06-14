@@ -164,6 +164,18 @@ test('product and cart pages expose all product images for rotation', function (
     $this->withSession(['cart' => [$product->id => 1]])
         ->get(route('cart.index'))
         ->assertOk()
-        ->assertSee('data-interval="2000"', false)
+        ->assertSee('data-interval="10000"', false)
         ->assertSee('image-3.jpg', false);
+
+    $this->get(route('products.show', $product))
+        ->assertOk()
+        ->assertSee('data-gallery-prev', false)
+        ->assertSee('data-gallery-next', false)
+        ->assertSee('data-interval="10000"', false);
+
+    $this->get(route('products.index'))
+        ->assertOk()
+        ->assertSee('data-card-prev', false)
+        ->assertSee('data-card-next', false)
+        ->assertSee('data-interval="10000"', false);
 });

@@ -19,6 +19,7 @@
     <meta name="twitter:image" content="@yield('og_image', asset('logos and images/hero-1920.jpg'))">
     <link rel="preload" as="image" href="{{ asset('logos and images/hero-1920.jpg') }}" fetchpriority="high">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @yield('head')
     @stack('head')
 </head>
 <body class="bg-stone-50 text-slate-900 antialiased">

@@ -6,6 +6,95 @@ gsap.registerPlugin(ScrollTrigger);
 
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+const adminMenuButton = document.querySelector('[data-admin-menu]');
+const adminSidebar = document.querySelector('[data-admin-sidebar]');
+adminMenuButton?.addEventListener('click', () => adminSidebar?.classList.toggle('is-open'));
+
+function bindImagePreview(input) {
+    input.addEventListener('change', () => {
+        const preview = input.closest('[data-upload-row]')?.querySelector('[data-image-preview]')
+            || input.closest('.admin-field-grid')?.querySelector('[data-image-preview]');
+        const file = input.files?.[0];
+        if (!preview || !file) return;
+
+        const image = document.createElement('img');
+        image.src = URL.createObjectURL(file);
+        image.alt = 'Selected image preview';
+        image.onload = () => URL.revokeObjectURL(image.src);
+        preview.replaceChildren(image);
+        preview.classList.add('has-image');
+    });
+}
+
+document.querySelectorAll('[data-image-input]').forEach(bindImagePreview);
+
+document.querySelector('[data-add-upload-row]')?.addEventListener('click', () => {
+    const container = document.querySelector('[data-upload-rows]');
+    if (!container) return;
+
+    const rows = container.querySelectorAll('[data-upload-row]');
+    const maxFiles = Number(container.dataset.maxFiles || 12);
+    if (rows.length >= maxFiles) return;
+
+    const index = rows.length;
+    const order = document.querySelectorAll('.admin-media-item').length + index;
+    const row = document.createElement('div');
+    row.className = 'admin-upload-row';
+    row.dataset.uploadRow = '';
+    row.innerHTML = `
+        <label>Upload image<input type="file" name="uploads[${index}][file]" accept="image/jpeg,image/png,image/webp" data-image-input></label>
+        <div class="admin-upload-preview" data-image-preview><span>Preview</span></div>
+        <label>Alt text<input name="uploads[${index}][alt_text]" placeholder="Describe the product image"></label>
+        <label>Order<input type="number" min="0" name="uploads[${index}][sort_order]" value="${order}"></label>
+        <label class="admin-check-field"><input type="radio" name="primary_image" value="new:${index}"> Primary image</label>
+        <button type="button" class="admin-danger" data-remove-upload>Remove</button>
+    `;
+    container.append(row);
+    bindImagePreview(row.querySelector('[data-image-input]'));
+});
+
+document.addEventListener('click', (event) => {
+    const removeButton = event.target.closest('[data-remove-upload]');
+    if (removeButton) removeButton.closest('[data-upload-row]')?.remove();
+});
+
+document.querySelectorAll('[data-rich-text]').forEach((editor) => {
+    const surface = editor.querySelector('[data-editor-surface]');
+    const input = editor.querySelector('[data-editor-input]');
+    if (!surface || !input) return;
+
+    const sync = () => {
+        input.value = surface.innerHTML.trim();
+    };
+
+    editor.querySelectorAll('[data-editor-command]').forEach((button) => {
+        button.addEventListener('click', () => {
+            surface.focus();
+            document.execCommand(button.dataset.editorCommand, false);
+            sync();
+        });
+    });
+
+    editor.querySelectorAll('[data-editor-block]').forEach((button) => {
+        button.addEventListener('click', () => {
+            surface.focus();
+            document.execCommand('formatBlock', false, button.dataset.editorBlock);
+            sync();
+        });
+    });
+
+    editor.querySelector('[data-editor-link]')?.addEventListener('click', () => {
+        const url = window.prompt('Enter a secure URL (https://...)');
+        if (!url) return;
+        surface.focus();
+        document.execCommand('createLink', false, url);
+        sync();
+    });
+
+    surface.addEventListener('input', sync);
+    editor.closest('form')?.addEventListener('submit', sync);
+});
+
 const header = document.querySelector('[data-site-header]');
 const menuToggle = document.querySelector('[data-menu-toggle]');
 const mobileMenu = document.querySelector('[data-mobile-menu]');
@@ -67,21 +156,28 @@ function activateRotatingMedia(root = document) {
         container.dataset.rotationReady = 'true';
         const image = container.querySelector('[data-product-image], [data-rotating-image]');
         const images = JSON.parse(container.dataset.images || '[]');
-        const interval = Number(container.dataset.interval || 2000);
+        const interval = Number(container.dataset.interval || 10000);
 
-        if (!image || images.length < 2 || reduceMotion) return;
+        if (!image || images.length < 2) return;
 
         let index = 0;
+        const previous = container.querySelector('[data-card-prev]');
+        const next = container.querySelector('[data-card-next]');
+        const current = container.querySelector('[data-card-current]');
+
+        const showImage = (nextIndex) => {
+            index = (nextIndex + images.length) % images.length;
+            image.classList.add('is-changing');
+            window.setTimeout(() => {
+                image.src = images[index];
+                image.classList.remove('is-changing');
+            }, 180);
+            if (current) current.textContent = String(index + 1);
+        };
+
         const start = () => {
-            if (imageTimers.has(container)) return;
-            const timer = window.setInterval(() => {
-                index = (index + 1) % images.length;
-                image.classList.add('is-changing');
-                window.setTimeout(() => {
-                    image.src = images[index];
-                    image.classList.remove('is-changing');
-                }, 180);
-            }, interval);
+            if (reduceMotion || imageTimers.has(container)) return;
+            const timer = window.setInterval(() => showImage(index + 1), interval);
             imageTimers.set(container, timer);
         };
         const stop = () => {
@@ -89,6 +185,15 @@ function activateRotatingMedia(root = document) {
             if (timer) window.clearInterval(timer);
             imageTimers.delete(container);
         };
+
+        const navigate = (nextIndex) => {
+            showImage(nextIndex);
+            stop();
+            start();
+        };
+
+        previous?.addEventListener('click', () => navigate(index - 1));
+        next?.addEventListener('click', () => navigate(index + 1));
 
         const visibility = new IntersectionObserver(([entry]) => entry.isIntersecting ? start() : stop(), { rootMargin: '120px' });
         visibility.observe(container);
@@ -100,7 +205,11 @@ activateRotatingMedia();
 document.querySelectorAll('[data-product-detail-gallery]').forEach((gallery) => {
     const main = gallery.querySelector('[data-gallery-main]');
     const thumbs = [...gallery.querySelectorAll('[data-gallery-thumb]')];
+    const previous = gallery.querySelector('[data-gallery-prev]');
+    const next = gallery.querySelector('[data-gallery-next]');
+    const current = gallery.querySelector('[data-gallery-current]');
     const images = JSON.parse(gallery.dataset.galleryImages || '[]');
+    const interval = Number(gallery.dataset.interval || 10000);
     let index = 0;
     let timer;
 
@@ -117,6 +226,7 @@ document.querySelectorAll('[data-product-detail-gallery]').forEach((gallery) => 
 
         thumbs.forEach((thumb) => thumb.classList.toggle('is-active', Number(thumb.dataset.galleryIndex) === index));
         thumbs[index]?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'nearest', inline: 'center' });
+        if (current) current.textContent = String(index + 1);
     };
 
     const stop = () => {
@@ -125,15 +235,27 @@ document.querySelectorAll('[data-product-detail-gallery]').forEach((gallery) => 
     };
     const start = () => {
         if (reduceMotion || images.length < 2 || timer) return;
-        timer = window.setInterval(() => showImage((index + 1) % images.length), 2000);
+        timer = window.setInterval(() => showImage((index + 1) % images.length), interval);
     };
+
+    const navigate = (nextIndex) => {
+        showImage((nextIndex + images.length) % images.length);
+        stop();
+        start();
+    };
+
+    previous?.addEventListener('click', () => navigate(index - 1));
+    next?.addEventListener('click', () => navigate(index + 1));
 
     thumbs.forEach((thumb) => {
         thumb.addEventListener('click', () => {
-            showImage(Number(thumb.dataset.galleryIndex));
-            stop();
-            start();
+            navigate(Number(thumb.dataset.galleryIndex));
         });
+    });
+
+    gallery.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowLeft') navigate(index - 1);
+        if (event.key === 'ArrowRight') navigate(index + 1);
     });
 
     const visibility = new IntersectionObserver(([entry]) => entry.isIntersecting ? start() : stop(), { rootMargin: '80px' });

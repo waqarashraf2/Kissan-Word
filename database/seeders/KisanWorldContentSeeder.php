@@ -221,7 +221,7 @@ TEXT;
             ProductImage::updateOrCreate(
                 [
                     'product_id' => $product->id,
-                    'path' => "products/demo/agriculture-field-{$index}.jpg",
+                    'path' => "product-media/demo/agriculture-field-{$index}.jpg",
                 ],
                 [
                     'alt_text' => $product->name." agriculture view {$index}",

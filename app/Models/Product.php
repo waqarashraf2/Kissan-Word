@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 class Product extends Model
 {
@@ -67,5 +68,16 @@ class Product extends Model
     public function getInStockAttribute(): bool
     {
         return ! $this->manage_stock || $this->stock_quantity > 0;
+    }
+
+    public function getOgImageUrlAttribute(): ?string
+    {
+        if (! $this->og_image) {
+            return $this->images->first()?->url;
+        }
+
+        return Str::startsWith($this->og_image, 'uploads/')
+            ? asset('storage/'.$this->og_image)
+            : asset(ltrim($this->og_image, '/'));
     }
 }

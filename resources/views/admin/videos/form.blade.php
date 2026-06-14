@@ -1,0 +1,9 @@
+@php($editingVideo=$video ?? null)
+<section class="admin-form-card"><div class="admin-field-grid">
+<label class="admin-span-2">Title<input name="title" value="{{ old('title',$editingVideo?->title) }}" required></label><label>Category<input name="category" value="{{ old('category',$editingVideo?->category) }}"></label><label>Slug<input name="slug" value="{{ old('slug',$editingVideo?->slug) }}"></label>
+<label>YouTube URL<input type="url" name="youtube_url" value="{{ old('youtube_url',$editingVideo?->youtube_url) }}" required></label><label>YouTube video ID<input name="youtube_video_id" value="{{ old('youtube_video_id',$editingVideo?->youtube_video_id) }}" required></label>
+<label>Thumbnail path<input name="thumbnail" value="{{ old('thumbnail',$editingVideo?->thumbnail) }}"></label><label>Thumbnail alt text<input name="thumbnail_alt" value="{{ old('thumbnail_alt',$editingVideo?->thumbnail_alt) }}"></label>
+<label class="admin-span-2">Description<textarea name="description" rows="8">{{ old('description',$editingVideo?->description) }}</textarea></label>
+<label>Published at<input type="datetime-local" name="published_at" value="{{ old('published_at',$editingVideo?->published_at?->format('Y-m-d\TH:i')) }}"></label><label class="admin-check-field"><input type="hidden" name="is_active" value="0"><input type="checkbox" name="is_active" value="1" @checked(old('is_active',$editingVideo?->is_active ?? true))> Active</label>
+</div></section>
+<section class="admin-form-card"><div class="admin-field-grid"><label>Meta title<input name="meta_title" value="{{ old('meta_title',$editingVideo?->meta_title) }}"></label><label>Canonical URL<input type="url" name="canonical_url" value="{{ old('canonical_url',$editingVideo?->canonical_url) }}"></label><label class="admin-span-2">Meta description<textarea name="meta_description" rows="4">{{ old('meta_description',$editingVideo?->meta_description) }}</textarea></label></div></section>

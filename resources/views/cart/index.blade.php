@@ -8,10 +8,10 @@
         <div class="cart-layout"><div class="cart-lines">
             @foreach($products as $product)
                 @php
-                    $cartImages = $product->images->map(fn ($image) => asset(ltrim($image->path, '/')))->values();
+                    $cartImages = $product->images->map(fn ($image) => $image->url)->values();
                     $cartFallback = asset('logos and images/Kisaan world.jpeg');
                 @endphp
-                <article class="cart-line" data-rotating-media data-images='@json($cartImages->isNotEmpty() ? $cartImages : [$cartFallback])' data-interval="2000">
+                <article class="cart-line" data-rotating-media data-images='@json($cartImages->isNotEmpty() ? $cartImages : [$cartFallback])' data-interval="10000">
                     <a href="{{ route('products.show',$product) }}" class="cart-line-media"><img src="{{ $cartImages->first() ?? $cartFallback }}" alt="{{ $product->name }}" data-rotating-image></a>
                     <div><h2><a href="{{ route('products.show',$product) }}">{{ $product->name }}</a></h2><strong>Rs. {{ number_format((float)$product->sale_price) }}</strong></div><form action="{{ route('cart.update',$product) }}" method="POST">@csrf @method('PATCH')<input type="number" name="quantity" value="{{ $cart[$product->id] }}" min="1" max="100"><button>Update</button></form><form action="{{ route('cart.destroy',$product) }}" method="POST">@csrf @method('DELETE')<button class="remove-button">Remove</button></form>
                 </article>

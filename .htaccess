@@ -1,0 +1,18 @@
+<IfModule mod_rewrite.c>
+    Options -Indexes
+    RewriteEngine On
+
+    # Serve only explicitly public assets from the Laravel public directory.
+    RewriteRule ^(build|logos%20and%20images|logos\ and\ images|products|storage)/(.*)$ public/$1/$2 [L,NE]
+    RewriteRule ^(favicon\.ico|robots\.txt)$ public/$1 [L]
+
+    RewriteRule ^index\.php$ - [L]
+
+    # Route every application URL through Laravel's root bridge. Existing
+    # project files are intentionally not exposed by Apache.
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+<FilesMatch "^(\.env|artisan|composer\.(json|lock)|package(-lock)?\.json|phpunit\.xml|vite\.config\.js)$">
+    Require all denied
+</FilesMatch>

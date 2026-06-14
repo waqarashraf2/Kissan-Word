@@ -34,12 +34,39 @@ class ProductRequest extends FormRequest
             'meta_title' => ['nullable', 'string', 'max:255'],
             'meta_description' => ['nullable', 'string', 'max:500'],
             'canonical_url' => ['nullable', 'url', 'max:255'],
-            'og_image' => ['nullable', 'string', 'max:255'],
-            'images' => ['nullable', 'array', 'max:12'],
-            'images.*.path' => ['required_with:images', 'string', 'max:255', 'distinct'],
-            'images.*.alt_text' => ['nullable', 'string', 'max:255'],
-            'images.*.sort_order' => ['nullable', 'integer', 'min:0'],
-            'images.*.is_primary' => ['nullable', 'boolean'],
+            'existing_images' => ['nullable', 'array', 'max:12'],
+            'existing_images.*.id' => [
+                'required', 'integer',
+                Rule::exists('product_images', 'id')->where('product_id', $product?->id),
+            ],
+            'existing_images.*.keep' => ['nullable', 'boolean'],
+            'existing_images.*.alt_text' => ['nullable', 'string', 'max:255'],
+            'existing_images.*.sort_order' => ['nullable', 'integer', 'min:0'],
+            'uploads' => ['nullable', 'array', 'max:12'],
+            'uploads.*.file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'uploads.*.alt_text' => ['nullable', 'string', 'max:255'],
+            'uploads.*.sort_order' => ['nullable', 'integer', 'min:0'],
+            'primary_image' => ['nullable', 'string', 'max:50'],
+            'og_image_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'remove_og_image' => ['nullable', 'boolean'],
+        ];
+    }
+
+    public function after(): array
+    {
+        return [
+            function ($validator): void {
+                $kept = collect($this->input('existing_images', []))
+                    ->filter(fn ($image) => (bool) ($image['keep'] ?? false))
+                    ->count();
+                $uploaded = collect($this->file('uploads', []))
+                    ->filter(fn ($upload) => isset($upload['file']))
+                    ->count();
+
+                if ($kept + $uploaded > 12) {
+                    $validator->errors()->add('uploads', 'A product can have a maximum of 12 images.');
+                }
+            },
         ];
     }
 }

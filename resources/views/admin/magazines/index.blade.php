@@ -1,0 +1,7 @@
+@extends('layouts.admin')
+@section('title', 'Magazines')
+@section('heading', 'Magazines')
+@section('content')
+<div class="admin-page-heading"><div><h1>Magazines</h1><p>Manage covers, secure PDFs, pricing and access.</p></div><a class="admin-primary" href="{{ route('admin.magazines.create') }}">Add Magazine</a></div>
+<section class="admin-card"><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Magazine</th><th>Issue</th><th>Price</th><th>Access</th><th>Status</th><th></th></tr></thead><tbody>@forelse($magazines as $magazine)<tr><td><strong>{{ $magazine->title }}</strong></td><td>{{ $magazine->issue_date?->format('M Y') }}</td><td>{{ $magazine->is_free ? 'Free' : 'Rs. '.number_format((float)$magazine->price) }}</td><td>{{ $magazine->allow_download ? 'Read + Download' : 'Read only' }}</td><td><span class="admin-status {{ $magazine->is_active ? 'completed' : 'cancelled' }}">{{ $magazine->is_active ? 'Active' : 'Hidden' }}</span></td><td class="admin-actions"><a href="{{ route('magazines.show',$magazine) }}" target="_blank">View</a><a href="{{ route('admin.magazines.edit',$magazine) }}">Edit</a><x-admin.delete-form :action="route('admin.magazines.destroy',$magazine)" /></td></tr>@empty<tr><td colspan="6" class="admin-empty">No magazines found.</td></tr>@endforelse</tbody></table></div><div class="admin-pagination">{{ $magazines->links() }}</div></section>
+@endsection
