@@ -1,0 +1,17 @@
+{
+  "../../../Clients Projects/KISAN WORLD/resources/css/app.css": {
+    "file": "assets/app-CDdOR9pR.css",
+    "src": "../../../Clients Projects/KISAN WORLD/resources/css/app.css",
+    "isEntry": true,
+    "name": "app",
+    "names": [
+      "app.css"
+    ]
+  },
+  "../../../Clients Projects/KISAN WORLD/resources/js/app.js": {
+    "file": "assets/app-BDNK0cox.js",
+    "name": "app",
+    "src": "../../../Clients Projects/KISAN WORLD/resources/js/app.js",
+    "isEntry": true
+  }
+}
